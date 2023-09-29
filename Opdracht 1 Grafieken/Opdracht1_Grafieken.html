@@ -1,0 +1,160 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Canvas Template</title>
+    <script src="Waarden.js"></script>
+    <script src="KolomDiagram.js"></script>
+    <script src="StaafDiagram.js"></script>
+    <script src="LijnDiagram.js"></script>
+    <script src="GrafiekTemplate.js"></script>
+    <script text="text/javascript">
+    	//Arthur Vartanian	Art&Tech
+    	// Console wrapper to make sure the app does not crash when not debugging.
+	    var Debugger = function(){}
+	    Debugger.log = function(message){
+	    	try{
+	    		console.log(message);
+	    	}
+	    	catch(exception){
+	    		return;
+	    	}
+	    }
+
+	    window.addEventListener("load", init, false);
+
+	    function init(){
+	    	Debugger.log("De pagina is ingeladen");
+	    	startTheApp();
+	    }
+
+	    function canvasSupport(){
+	    	return !!document.createElement("canvas").getContext;
+	    }
+
+	    function startTheApp(){
+	    	if(!canvasSupport()) {
+	    		Debugger.log("Something went wrong:(!");
+	    		return false;
+	    	}
+
+	    	var canvas = document.getElementById("canvasOne");
+	    	var context = canvas.getContext("2d");
+
+	    	var waardenK = new Waarden();
+	    	var kolomDiagram = new KolomDiagram();
+	    	var staafDiagram = new StaafDiagram();
+	    	var lijnDiagram = new LijnDiagram();
+	    	var grafiekTemplate = new GrafiekTemplate();
+	    	var savedVal = "";
+	    	var keuze = document.getElementById("chkKeuze");
+
+	    	// randen tekenen
+	    	grafiekTemplate.drawTemplate(context, canvas);
+
+			document.getElementById("btnCommit").addEventListener("click", drawGraph, false);
+
+			document.getElementById('graphOptions').addEventListener("click", function(){
+				if(keuze.checked){
+					drawGraph();
+				}
+			});
+
+			document.getElementById("btnToevoegen").onclick = function(){
+				// toegevoegde waarde valideren en toevoegen
+				var waarde = document.getElementById("txtWaarde").value;
+				
+				var bool = waardenK.valideren(waarde);
+
+				document.getElementById("txtWaarde").value = "";
+
+				if(bool = true){
+					selectVullen();
+				}
+			}
+
+			function drawGraph(){
+				// controleren welke diagram geselecteerd en tekenen
+
+				context.clearRect(0, 0, canvas.width, canvas.height);
+				var waardenLijst = waardenK.getArray();
+
+				if(document.getElementById("rbKolom").checked){
+					grafiekTemplate.drawTemplate(context, canvas);
+				    kolomDiagram.drawKolomGraph(context, waardenLijst);
+				}
+				else if(document.getElementById("rbStaaf").checked) {
+				    grafiekTemplate.drawTemplate(context, canvas);
+				    staafDiagram.drawStaafGraph(context, waardenLijst);
+				}
+				else if (document.getElementById("rbLijn").checked) {
+					grafiekTemplate.drawTemplate(context, canvas);
+				    lijnDiagram.drawLijnGraph(context, waardenLijst);
+				};
+			}
+			
+
+	    	function selectVullen(){
+	    		
+				var waardenLijst = waardenK.getArray();
+
+				var select = document.getElementById("selectWaarde");
+
+				var arrayLengte = waardenLijst.length;
+
+				var el = document.createElement("option");
+				var optie = waardenLijst[arrayLengte-1];
+				el.textContent = optie;
+				el.value = optie;
+				select.appendChild(el);
+
+				if(keuze.checked){
+					drawGraph();
+				}
+			}
+
+			document.getElementById("btnVerwijderen").onclick = function(){
+				var s = document.getElementById("selectWaarde");
+
+				if(s.selectedIndex >= 0){
+					waardenK.verwijderen(s.selectedIndex);
+					s.remove(s.selectedIndex);
+				}
+				else{
+					alert("Selecteer een waarde!");
+				}
+
+				if(keuze.checked){
+					drawGraph();
+				}
+			}
+	    }
+	    
+	</script>
+
+</head>
+<body>
+	<canvas id="canvasOne" width="1000" height="500" border="1px solid black">
+		Helaas pindakaas! Jouw broswer werkt niet mee! Upgrade snel naar Google Chrome!
+	</canvas>
+
+	<form>
+		<label>Waarde: <input type="text" name="waarde" id="txtWaarde"></label>
+		<input type="button" value="Toevoegen" name="btnToevoegen" id="btnToevoegen">
+		<input type="button" value="Verwijderen" name="btnVerwijderen" id="btnVerwijderen">
+		<input type="button" value="Pas toe!" name="btnCommit" id="btnCommit">
+		<br><br>
+		<select id="selectWaarde" size="10"></select>
+	</form>
+	
+	<div id="graphOptions">
+		
+		<ul>
+			<li><input type='radio' name='graphStyle' value='kolom' id='rbKolom' checked><label>Kolomdiagram</label></li>
+			<li><input type='radio' name='graphStyle' value='staaf' id='rbStaaf'><label>Staafdiagram</label></li>
+			<li><input type='radio' name='graphStyle' value='lijn' id='rbLijn'><label>Lijndiagram</label></li>
+		</ul>
+		<input type="checkbox" name="update" value="update" id="chkKeuze" checked>Auto update
+	</div>
+</body>
+</html>
